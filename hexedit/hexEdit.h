@@ -1,6 +1,6 @@
 
-// (c) 2003, 2004 - Matthias Melcher, Venice, CA 90291
-// This file is provided under GPL license. 
+// (c) 2003 - Matthias Melcher, Venice, CA 90291
+
 
 #ifndef HEXEDIT_H
 #define HEXEDIT_H

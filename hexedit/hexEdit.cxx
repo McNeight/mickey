@@ -1,6 +1,5 @@
 
-// (c) 2003, 2004 - Matthias Melcher, Venice, CA 90291
-// This file is provided under GPL license.
+// (c) 2003 - Matthias Melcher, Venice, CA 90291
 
 // ACTIVE:
 
@@ -116,9 +115,9 @@
 #define UL "&"
 #endif
 
-#define MM_VERSION "v0.1 for " MM_OS
+#define MM_VERSION "v0.1.13 for " MM_OS
 #define MM_COPYRIGHT "Copyright (c) 2003, 2004, Matthias Melcher, Venice, CA"
-#define MM_APPNAME "cxHexEdit - (c) 2003, Matthias Melcher"
+#define MM_APPNAME "mickey hex editor - (c) 2003, Matthias Melcher"
 #define MM_WEB "http://www.matthiasm.com/"
 
 #include "hexEdit.h"
@@ -240,7 +239,7 @@ Fl_Menu_Item HeMenubar::itemList[] = {
   {   UL"Save", MM_CMD+'s', saveCB, 0, 0, MM_MENUSTYLE },
   {   "Save "UL"As...", FL_SHIFT+MM_CMD+'s', saveAsCB, 0, 0, MM_MENUSTYLE },
   {   UL"Close", MM_CMD+'w', closeCB, 0, FL_MENU_DIVIDER, MM_MENUSTYLE },
-  {   "E"UL"xit cxHexEdit", MM_CMD+'q', quitCB, 0, 0, MM_MENUSTYLE },
+  {   "E"UL"xit mickey", MM_CMD+'q', quitCB, 0, 0, MM_MENUSTYLE },
   {   0 },
   { UL"Edit", 0, 0, 0, FL_SUBMENU, MM_MENUSTYLE },
   {   UL"Undo", MM_CMD+'z', 0, 0, FL_MENU_INACTIVE, MM_MENUSTYLE },
@@ -261,7 +260,7 @@ Fl_Menu_Item HeMenubar::itemList[] = {
   {   "Find "UL"Next", MM_CMD+'g', 0, 0, FL_MENU_INACTIVE, MM_MENUSTYLE },
   {   0 },
   { UL"Help", 0, 0, 0, FL_SUBMENU, MM_MENUSTYLE },
-  {   UL"About cxHexEdit...", 0, aboutCB, 0, 0, MM_MENUSTYLE },
+  {   UL"About mickey...", 0, aboutCB, 0, 0, MM_MENUSTYLE },
   {   0 },
   { 0 }
 };
@@ -335,7 +334,7 @@ void HeMenubar::insertModeCB(Fl_Widget*, void *userdata) {
 }
 
 void HeMenubar::aboutCB(Fl_Widget*, void*) {
-  fl_message("cxHexEdit "MM_VERSION"\n"MM_COPYRIGHT"\n\n"
+  fl_message("mickey "MM_VERSION"\n"MM_COPYRIGHT"\n\n"
              "a free cross platform hex editor\n\n"
              MM_WEB);
 }
@@ -1711,7 +1710,7 @@ void HeCycleButton::incr() {
 //---- Preferences -------------------------------------------------------------
 
 HePreferences::HePreferences()
-: app(Fl_Preferences::USER, "matthiasm.com", "cxHexEdit") {
+: app(Fl_Preferences::USER, "matthiasm.com", "mickeyHexEditor") {
   app.get("propfont", propfont, MM_PROP_FONT);
   app.get("propsize", propsize, MM_PROP_SIZE);
   app.get("fixedfont", fixedfont, MM_FIXED_FONT);
