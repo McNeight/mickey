@@ -103,12 +103,13 @@
 #define MM_FIXED_SIZE 10
 #define MM_CMD FL_META
 #define UL
+// else if _WIN32
 #else
 #define MM_OS "X11"
 #define MM_MENUSTYLE 0, FL_HELVETICA, MM_PROP_SIZE
 #define MM_PROP_FONT "-*-helvetica-medium-r-normal--*"
-#define MM_PROP_SIZE 12
-#define MM_PROP_SIZE_MED 11
+#define MM_PROP_SIZE 13
+#define MM_PROP_SIZE_MED 12
 #define MM_FIXED_FONT "-*-lucidatypewriter-medium-r-normal-sans-*"
 #define MM_FIXED_SIZE 12
 #define MM_CMD FL_CTRL
