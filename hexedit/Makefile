@@ -11,6 +11,11 @@ POSTBUILD = echo
 # now we can make modifications based on the operationg system and machine
 # we run on
 UNAME := $(shell uname) 
+ifneq (,$(findstring SunOS,$(UNAME)))
+  MY_CXXFLAGS     += -Wno-unknown-pragmas
+  SYS_LIBRARY_PATH = -L/usr/openwin/lib
+  SYS_LIBRARIES    = -lm -lXext -lX11 -lsupc++
+endif
 ifneq (,$(findstring Linux,$(UNAME)))
   SYS_LIBRARY_PATH = -L/usr/X11R6/lib
   SYS_LIBRARIES    = -lm -lXext -lX11 -lsupc++
