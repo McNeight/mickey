@@ -103,7 +103,16 @@
 #define MM_FIXED_SIZE 10
 #define MM_CMD FL_META
 #define UL
-// else if _WIN32
+#elif (defined WIN32)
+#define MM_OS "Win32"
+#define MM_MENUSTYLE 0, FL_HELVETICA, MM_PROP_SIZE
+#define MM_PROP_FONT " Arial"
+#define MM_PROP_SIZE 12
+#define MM_PROP_SIZE_MED 11
+#define MM_FIXED_FONT " Fixedsys"
+#define MM_FIXED_SIZE 10
+#define MM_CMD FL_META
+#define UL
 #else
 #define MM_OS "X11"
 #define MM_MENUSTYLE 0, FL_HELVETICA, MM_PROP_SIZE
@@ -572,7 +581,7 @@ void HeDocument::filename(const char *name) {
 
 void HeDocument::loadFile(const char *name) {
   if (!name) return;
-  ssize_t n = 0;
+  size_t n = 0;
   filename(name);  
   size_ = 0;
   file_ = open(filename(), O_RDONLY, 0644);
@@ -595,14 +604,14 @@ void HeDocument::loadFile(const char *name) {
   gap = size_; gapSize = 2048;
   buffer_ = (unsigned char*)malloc(size_+gapSize+2);
   n = read(file_, buffer_, size_);
-  if (n==-1) {
+  if (n==(size_t)-1) {
     fl_alert("Can't read contents of file \n\"%s\".\n%s.\n"
              "Assuming empty file.",
              filename(), strerror(errno));
     size_ = 0;
     free(buffer_); buffer_ = 0;
     goto cleanReturn;
-  } else if (n<(ssize_t)size_) {
+  } else if (n<(size_t)size_) {
     fl_alert("File \n\"%s\"\ntruncated while reading."
              "Editing file is not recommended.",
              filename());
@@ -626,14 +635,14 @@ void HeDocument::saveFile(const char *name) {
              filename(), strerror(errno));
     return;
   }
-  ssize_t n1=0, n2=0;
+  size_t n1=0, n2=0;
   n1 = write(out, buffer_, gap);
-  if (n1!=-1) n2 = write(out, buffer_+gap+gapSize, size_-gap);
-  if (n1==-1 || n2==-1) {
+  if (n1!=(size_t)-1) n2 = write(out, buffer_+gap+gapSize, size_-gap);
+  if (n1==(size_t)-1 || n2==(size_t)-1) {
     fl_alert("Can't write document to file \n\"%s\".\n%s.\n"
              "File will be truncated.",
              filename(), strerror(errno));
-  } else if (n1+n2<(ssize_t)size_) {
+  } else if (n1+n2<(size_t)size_) {
     fl_alert("File \"%s\"\ntruncated while writing!",
              filename());
   }
