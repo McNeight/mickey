@@ -11,9 +11,9 @@ POSTBUILD = echo
 # now we can make modifications based on the operationg system and machine
 # we run on
 UNAME := $(shell uname) 
-ifeq ($(UNAME),"Linux")
+ifneq (,$(findstring Linux,$(UNAME)))
   SYS_LIBRARY_PATH = -L/usr/X11R6/lib
-  SYS_LIBRARIES    = -lm -lXext -lX11
+  SYS_LIBRARIES    = -lm -lXext -lX11 -lsupc++
 endif
 ifneq (,$(findstring CYGWIN,$(UNAME)))
   MY_CXXFLAGS     += -mwindows -DWIN32 -mno-cygwin
