@@ -1,6 +1,6 @@
 
 Tue May 4th, 2004
- - modified Makefile for Cygwin/Windows support
+ - modified Makefile for Cygwin/Windows and Apple/OS X support
  - changed ssize_t to size_t for Windows
 Mon May 3rd, 2004
  - added Makefile with settings for Linux
