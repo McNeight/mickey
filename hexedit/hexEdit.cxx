@@ -66,7 +66,7 @@
 // - basic UI
 // - address, hex and ascii column
 // - handle insertion with moving gap (small files)
-// - minimum selection handling
+// - basic selection handling
 // - handle 'changed' flag (* indicator, ask before close)
 // - font settings, resizing
 // - save on application quit
@@ -87,7 +87,7 @@
 //    o save
 //    o close
 //    o search
-// - test compile on Linux, minor changes
+// - compile on Linux, Windows, Max OS X
 // - make cycle button automatically increment and cycle
 // - statusbar
 //    o show adress, selection, selection size
@@ -185,10 +185,13 @@ HeApp::HeApp(int argc, char **argv) {
   window->end();
   window->callback(closeAppWindowCB, this);
   window->resizable(doclist);
-  window->show(argc, argv);
   //++ for testing only:
   //++ doclist->add("demo.o");
-  if (argc>1) doclist->add(argv[1]);
+  for (int i=1;i<argc;) {
+    if (Fl::arg(argc, argv, i)==0 && i<argc) 
+      doclist->add(argv[i++]);
+  }
+  window->show(argc, argv);
 }
 
 HeApp::~HeApp() {
