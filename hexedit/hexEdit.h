@@ -1,5 +1,5 @@
 
-// (c) 2003 - Matthias Melcher, Venice, CA 90291
+// (c) 2003, 2004 - Matthias Melcher, Venice, CA 90291
 
 
 #ifndef HEXEDIT_H

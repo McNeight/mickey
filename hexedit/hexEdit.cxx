@@ -1,5 +1,5 @@
 
-// (c) 2003 - Matthias Melcher, Venice, CA 90291
+// (c) 2003, 2004 - Matthias Melcher, Venice, CA 90291
 
 // ACTIVE:
 
@@ -125,9 +125,9 @@
 #define UL "&"
 #endif
 
-#define MM_VERSION "v0.1.13 for " MM_OS
+#define MM_VERSION "v0.1.14 for " MM_OS
 #define MM_COPYRIGHT "Copyright (c) 2003, 2004, Matthias Melcher, Venice, CA"
-#define MM_APPNAME "mickey hex editor - (c) 2003, Matthias Melcher"
+#define MM_APPNAME "mickey hex editor - (c) 2003, 2004, Matthias Melcher"
 #define MM_WEB "http://www.matthiasm.com/"
 
 #include "hexEdit.h"
