@@ -1,0 +1,27 @@
+Mickey is (c) 2003 - Matthias Melcher, Venice, CA 90291
+Mickey is licensed under GPL.
+
+In order to compile mickey, you will need to download and install
+the user interface library 'FLTK1.1.x' or 'FLTK1.2.x' from 
+www.fltk.org . 
+
+There is no makefile included yet in this project. The easiest
+way to compile mickey is to move the files into the test directory
+of FLTK and add a line or two the fltk/test/makefile. Mickey
+should compile without changes on all platforms that are supported
+by FLTK, including Mac OS X, Windows 98/NT/2000/XP, and Linux.
+
+Mickey does not support editing of very large files yet! See the
+first two pages of hexEdit.cxx for more information on implemented
+and planned features.
+
+Have fun, send suggestions, 
+
+ Matthias
+
+
+http://mickey.sourceforge.net/
+http://www.matthiasm.com/
+mickey@matthiasm.com
+
+

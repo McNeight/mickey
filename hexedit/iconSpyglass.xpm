@@ -1,0 +1,20 @@
+/* XPM */
+static const char * iconSpyglass_xpm[] = {
+"15 15 2 1",
+" 	c none",
+"o	c #222222",
+"    oooo       ",
+"  oooooooo     ",
+" ooo    ooo    ",
+" oo      oo    ",
+"ooo      ooo   ",
+"oo        oo   ",
+"oo        oo   ",
+"ooo      ooo   ",
+" oo      oo    ",
+" ooo    ooo    ",
+"   ooooooooo   ",
+"    oooo  ooo  ",
+"           ooo ",
+"            ooo",
+"             o "};
