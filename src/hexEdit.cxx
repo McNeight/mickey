@@ -1683,7 +1683,7 @@ HeCycleButton::HeCycleButton(int x, int y, int w, int h,
   box(FL_PLASTIC_UP_BOX);
   choice = 0; nChoice = n;
   warn = 0;
-  labels = new (char*)[n];
+  labels = new char*[n];
   labels[0] = t;
   va_list va;
   va_start(va, t);

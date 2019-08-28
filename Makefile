@@ -4,7 +4,7 @@
 FLTK_INCLUDE_PATH = -I/usr/local/include
 FLTK_LIBRARY_PATH = -L/usr/local/lib
 FLTK_LIBRARIES    = -lfltk
-MY_CXXFLAGS = -O2 -Wall -Wunused -fno-exceptions
+MY_CXXFLAGS = -O2 -Wall -Wunused -fno-exceptions -fpermissive
 EXE =
 POSTBUILD = echo
 
@@ -21,7 +21,7 @@ ifneq (,$(findstring Linux,$(UNAME)))
   SYS_LIBRARIES    = -lm -lXext -lX11 -lsupc++
 endif
 ifneq (,$(findstring CYGWIN,$(UNAME)))
-  MY_CXXFLAGS     += -mwindows -DWIN32 -mno-cygwin
+  MY_CXXFLAGS     += -mwindows -DWIN32
   SYS_LIBRARY_PATH = 
   SYS_LIBRARIES    = -lole32 -luuid -lcomctl32 -lwsock32 -lsupc++
   EXE              = .exe
@@ -36,13 +36,11 @@ CXXFLAGS = $(FLTK_INCLUDE_PATH) $(MY_CXXFLAGS)
 LDFLAGS  = $(FLTK_LIBRARY_PATH) $(SYS_LIBRARY_PATH)
 LIBS     = $(FLTK_LIBRARIES) $(SYS_LIBRARIES)
 
+ICONS = $(wildcard icons/*.xpm)
 
-ICONS = iconEmpty32.xpm iconSave24.xpm iconClose24.xpm iconNew24.xpm \
-        iconSpyglass.xpm iconEmpty24.xpm iconOpen24.xpm
-
-mickey$(EXE): hexEdit.cxx $(ICONS)
+mickey$(EXE): src/hexEdit.cxx src/hexEdit.h $(ICONS)
 	echo $(TEST)
-	g++ $(CXXFLAGS) hexEdit.cxx $(LDFLAGS) $(LIBS) -o $@
+	g++ $(CXXFLAGS) src/hexEdit.cxx src/hexEdit.h -Iicons $(LDFLAGS) $(LIBS) -o $@
 	$(POSTBUILD) 
 
 
