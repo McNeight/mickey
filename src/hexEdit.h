@@ -1,5 +1,5 @@
-
-// (c) 2003, 2004 - Matthias Melcher, Venice, CA 90291
+// Copyright © 2003-2004 Matthias Melcher
+// Copyright © 2019-2020 Neil McNeight
 
 
 #ifndef HEXEDIT_H
@@ -224,7 +224,7 @@ public:
   void createStandardColumns();
   void resize(int x, int y, int w, int h);
   void layout();
-  virtual int handle(int); 
+  virtual int handle(int);
   int bytesPerRow() { return bytesPerRow_; }
   int bytesPerPage() { return rowsPerPage_*bytesPerRow_; }
   int rows() { return rows_; }
@@ -246,7 +246,7 @@ protected:
 public:
   HeColumn(int x, int y, int w, int h, HeDocumentManager*);
   HeColumnGroup *column() { return (HeColumnGroup*)parent(); }
-  virtual int handle(int); 
+  virtual int handle(int);
   virtual void layout();
   virtual void getWidth(int&, int&) = 0;
   void draw_bg();

@@ -1,5 +1,5 @@
-
-// (c) 2003, 2004 - Matthias Melcher, Venice, CA 90291
+// Copyright © 2003-2004 Matthias Melcher
+// Copyright © 2019-2020 Neil McNeight
 
 // ACTIVE:
 
@@ -24,7 +24,7 @@
 // - error message on big and huge files
 // - undo/redo!
 // - handling of selection
-//    o drag'n'drop for selected text
+//    o drag 'n drop for selected text
 //    o double-click selects multiple bytes/block/struct
 // - Preferences
 //    o user settings
@@ -39,9 +39,9 @@
 // - partial redraw instead of full page redraw
 // - ask if user is sure to overwrite a file
 // - make previous/next line visible when scrolling
-// - file and directory drag'n'drop
+// - file and directory drag 'n drop
 // - user marks (see VisualC F2)
-// - user annotations with seperate text column
+// - user annotations with separate text column
 // - annotated areas, structs, classes
 // - file format description, scripting
 // - tab key to change between hex and text editing
@@ -90,7 +90,7 @@
 // - compile on Linux, Windows, Max OS X
 // - make cycle button automatically increment and cycle
 // - statusbar
-//    o show adress, selection, selection size
+//    o show address, selection, selection size
 //    o show byte, word, dword, float, double, ASCII
 
 #ifdef __APPLE__
@@ -125,10 +125,10 @@
 #define UL "&"
 #endif
 
-#define MM_VERSION "v0.1.14 for " MM_OS
-#define MM_COPYRIGHT "Copyright (c) 2003, 2004, Matthias Melcher, Venice, CA"
-#define MM_APPNAME "mickey hex editor - (c) 2003, 2004, Matthias Melcher"
-#define MM_WEB "http://www.matthiasm.com/"
+#define MM_VERSION UL"v0.8 for " MM_OS
+#define MM_COPYRIGHT UL"Copyright © 2003-2004 Matthias Melcher\nCopyright © 2019-2020 Neil McNeight"
+#define MM_APPNAME UL"mickey hex editor"
+#define MM_WEB UL"http://www.github.com/McNeight/mickey/"
 
 #include "hexEdit.h"
 
@@ -137,18 +137,25 @@
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Scrollbar.H>
-#include <FL/fl_draw.H>
-#include <FL/fl_message.H>
+#include <FL/Fl_draw.H>
+#include <FL/Fl_message.H>
 #include <FL/Fl_Menu_Item.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/filename.H>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Pixmap.H>
+#include <FL/Fl_utf8.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#else
+#include <corecrt_io.h>
+#endif
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -172,15 +179,15 @@ char appname[] = MM_APPNAME;
 //---- HeApp -------------------------------------------------------------------
 
 HeApp::HeApp(int argc, char **argv) {
-  if (prefs.winflags&1) 
-    window = new Fl_Double_Window(prefs.winx, prefs.winy, 
+  if (prefs.winflags&1)
+    window = new Fl_Double_Window(prefs.winx, prefs.winy,
                                   prefs.winw, prefs.winh, appname);
   else
     window = new Fl_Double_Window(prefs.winw, prefs.winh, appname);
   menubar = new HeMenubar(0, 0, window->w(), 10+prefs.propsize, this);
   toolbar = new HeToolbar(0, menubar->h(), window->w(), 30+prefs.propsize, this);
   doclist = new HeDocumentList
-    ( 0, menubar->h()+toolbar->h(), window->w(), 
+    ( 0, menubar->h()+toolbar->h(), window->w(),
       window->h()-menubar->h()-toolbar->h(), this);
   window->end();
   window->callback(closeAppWindowCB, this);
@@ -188,7 +195,7 @@ HeApp::HeApp(int argc, char **argv) {
   //++ for testing only:
   //++ doclist->add("demo.o");
   for (int i=1;i<argc;) {
-    if (Fl::arg(argc, argv, i)==0 && i<argc) 
+    if (Fl::arg(argc, argv, i)==0 && i<argc)
       doclist->add(argv[i++]);
   }
   window->show(argc, argv);
@@ -250,27 +257,27 @@ Fl_Menu_Item HeMenubar::itemList[] = {
   {   UL"New", MM_CMD+'n', newCB, 0, 0, MM_MENUSTYLE },
   {   UL"Open...", MM_CMD+'o', openCB, 0, FL_MENU_DIVIDER, MM_MENUSTYLE },
   {   UL"Save", MM_CMD+'s', saveCB, 0, 0, MM_MENUSTYLE },
-  {   "Save "UL"As...", FL_SHIFT+MM_CMD+'s', saveAsCB, 0, 0, MM_MENUSTYLE },
+  {   UL"Save &As...", FL_SHIFT+MM_CMD+'s', saveAsCB, 0, 0, MM_MENUSTYLE },
   {   UL"Close", MM_CMD+'w', closeCB, 0, FL_MENU_DIVIDER, MM_MENUSTYLE },
-  {   "E"UL"xit mickey", MM_CMD+'q', quitCB, 0, 0, MM_MENUSTYLE },
+  {   UL"E&xit mickey", MM_CMD+'q', quitCB, 0, 0, MM_MENUSTYLE },
   {   0 },
   { UL"Edit", 0, 0, 0, FL_SUBMENU, MM_MENUSTYLE },
   {   UL"Undo", MM_CMD+'z', 0, 0, FL_MENU_INACTIVE, MM_MENUSTYLE },
-  {   UL"Redo", FL_SHIFT+MM_CMD+'z', 0, 0, FL_MENU_INACTIVE|FL_MENU_DIVIDER, 
+  {   UL"Redo", FL_SHIFT+MM_CMD+'z', 0, 0, FL_MENU_INACTIVE|FL_MENU_DIVIDER,
     MM_MENUSTYLE },
-  {   "C"UL"ut", MM_CMD+'x', cutCB, 0, 0, MM_MENUSTYLE },
+  {   UL"C&ut", MM_CMD+'x', cutCB, 0, 0, MM_MENUSTYLE },
   {   UL"Copy", MM_CMD+'c', copyCB, 0, 0, MM_MENUSTYLE },
   {   UL"Paste", MM_CMD+'v', pasteCB, 0, 0, MM_MENUSTYLE },
   {   UL"Delete", 0, 0, 0, FL_MENU_INACTIVE, MM_MENUSTYLE },
-  {   "Select "UL"All", MM_CMD+'a', 0, 0, FL_MENU_INACTIVE|FL_MENU_DIVIDER, 
+  {   UL"Select &All", MM_CMD+'a', 0, 0, FL_MENU_INACTIVE|FL_MENU_DIVIDER,
     MM_MENUSTYLE },
   {   UL"Insert", MM_CMD+'i', insertModeCB, (void*)1, 0, MM_MENUSTYLE },
   {   UL"Overwrite", FL_SHIFT+MM_CMD+'i', insertModeCB, 0, 0, MM_MENUSTYLE },
   {   0 },
   { UL"Find", 0, 0, 0, FL_SUBMENU, MM_MENUSTYLE },
   {   UL"Find", MM_CMD+'f', 0, 0, FL_MENU_INACTIVE, MM_MENUSTYLE },
-  {   "Find && "UL"Replace", MM_CMD+'h', 0, 0, FL_MENU_INACTIVE, MM_MENUSTYLE },
-  {   "Find "UL"Next", MM_CMD+'g', 0, 0, FL_MENU_INACTIVE, MM_MENUSTYLE },
+  {   UL"Find && &Replace", MM_CMD+'h', 0, 0, FL_MENU_INACTIVE, MM_MENUSTYLE },
+  {   UL"Find &Next", MM_CMD+'g', 0, 0, FL_MENU_INACTIVE, MM_MENUSTYLE },
   {   0 },
   { UL"Help", 0, 0, 0, FL_SUBMENU, MM_MENUSTYLE },
   {   UL"About mickey...", 0, aboutCB, 0, 0, MM_MENUSTYLE },
@@ -278,7 +285,7 @@ Fl_Menu_Item HeMenubar::itemList[] = {
   { 0 }
 };
 
-HeMenubar::HeMenubar(int x, int y, int w, int h, HeApp *a) 
+HeMenubar::HeMenubar(int x, int y, int w, int h, HeApp *a)
 : Fl_Group(x, y, w, h)
 {
   app = a;
@@ -295,7 +302,7 @@ void HeMenubar::newCB(Fl_Widget*, void*) {
 void HeMenubar::openCB(Fl_Widget*, void*) {
   const char *defaultFilename = 0;
   if (app->document())
-	defaultFilename = app->document()->filename();
+    defaultFilename = app->document()->filename();
   const char *filename = fl_file_chooser
     ( "Open File", 0, defaultFilename);
   if (filename)
@@ -347,7 +354,7 @@ void HeMenubar::insertModeCB(Fl_Widget*, void *userdata) {
 }
 
 void HeMenubar::aboutCB(Fl_Widget*, void*) {
-  fl_message("mickey "MM_VERSION"\n"MM_COPYRIGHT"\n\n"
+  fl_message(UL"mickey " MM_VERSION"\n" MM_COPYRIGHT"\n\n"
              "a free cross platform hex editor\n\n"
              MM_WEB);
 }
@@ -357,7 +364,7 @@ void HeMenubar::aboutCB(Fl_Widget*, void*) {
 HeTool::HeTool(int x, int y, int w, int h)
 : Fl_Group(x, y, w, h) { }
 
-HeTool::HeTool(int x, int y, int w, int h, const char *label, 
+HeTool::HeTool(int x, int y, int w, int h, const char *label,
                const char *const*xpm)
 : Fl_Group(x, y, w, h)
 {
@@ -428,16 +435,16 @@ HeToolSearch::~HeToolSearch() {
 void HeToolSearch::convertInput() {
   int n = strlen(input->value());
   if (n==0) {
-    nBuffer = 0; 
+    nBuffer = 0;
     return;
   }
-  if (NBuffer<=n) 
+  if (NBuffer<=n)
     buffer = (unsigned short*)realloc(buffer, (n+1)*sizeof(short));
   //++ simplified version just copies text over
   //++ we must write a little interpreter instead!
   const char *src = input->value();
   for (int i=0; i<=n; i++) {
-	buffer[i] = src[i];
+    buffer[i] = src[i];
   }
   nBuffer = n;
 }
@@ -450,7 +457,7 @@ void HeToolSearch::convertInputCB(Fl_Widget *w, void *user_data) {
 
 //---- HeToolbar ---------------------------------------------------------------
 
-HeToolbar::HeToolbar(int x, int y, int w, int h, HeApp *a) 
+HeToolbar::HeToolbar(int x, int y, int w, int h, HeApp *a)
 : Fl_Group(x, y, w, h)
 {
   int xl = x+8, xr = w-8;
@@ -467,7 +474,7 @@ HeToolbar::HeToolbar(int x, int y, int w, int h, HeApp *a)
   xr -= 36; t = new HeTool(xr+3, y, 33, h, "Help", iconEmpty24_xpm);
   t->callback(helpCB, this);
   t = new HeToolSearch(xl, y, xr-xl, h);
-  t->callback(searchCB, this);  
+  t->callback(searchCB, this);
   resizable(t);
   end();
 }
@@ -480,7 +487,7 @@ void HeToolbar::openCB(Fl_Widget*, void *tu) {
   HeToolbar *t = (HeToolbar*)tu;
   const char *defaultFilename = 0;
   if (t->app->document())
-	defaultFilename = t->app->document()->filename();
+    defaultFilename = t->app->document()->filename();
   const char *filename = fl_file_chooser
     ( "Open File", 0, defaultFilename);
   if (filename)
@@ -512,7 +519,7 @@ void HeToolbar::helpCB(Fl_Widget*, void *t) {
 
 //---- HeDocumentList ----------------------------------------------------------
 
-HeDocumentList::HeDocumentList(int x, int y, int w, int h, HeApp *a) 
+HeDocumentList::HeDocumentList(int x, int y, int w, int h, HeApp *a)
 : Fl_Tabs(x, y+5, w, h-5)
 {
   app = a;
@@ -523,7 +530,7 @@ void HeDocumentList::add(const char *filename) {
   HeDocument *doc = new HeDocument(x(), y()+18, w(), h()-18, app);
   resizable(doc);
   end();
-  if (filename) 
+  if (filename)
     doc->loadFile(filename);
   doc->layout();
   redraw();
@@ -531,7 +538,7 @@ void HeDocumentList::add(const char *filename) {
 
 //---- HeDocument --------------------------------------------------------------
 
-HeDocument::HeDocument(int x, int y, int w, int h, HeApp *a) 
+HeDocument::HeDocument(int x, int y, int w, int h, HeApp *a)
 : Fl_Group(x, y, w, h, "unnamed")
 {
   labelfont(FL_HELVETICA);
@@ -541,7 +548,7 @@ HeDocument::HeDocument(int x, int y, int w, int h, HeApp *a)
   shortname = 0;
   labelname = 0;
   size_ = 0;
-  gap = 0; 
+  gap = 0;
   gapSize = 2048;
   buffer_ = (unsigned char*)malloc(size_+gapSize+2);
   file_ = -1;
@@ -551,16 +558,16 @@ HeDocument::HeDocument(int x, int y, int w, int h, HeApp *a)
 }
 
 HeDocument::~HeDocument() {
-  if (filename_) 
+  if (filename_)
     free(filename_);
-  if (shortname) 
+  if (shortname)
     free(shortname);
-  if (labelname) 
+  if (labelname)
     free(labelname);
   if (buffer_)
     free(buffer_);
   if (file_!=-1)
-    ::close(file_);
+    ::_close(file_);
 }
 
 void HeDocument::filename(const char *name) {
@@ -568,15 +575,15 @@ void HeDocument::filename(const char *name) {
   if (!name) return;
   fl_filename_absolute(buffer, 2047, name);
   if (filename_) free(filename_);
-  filename_ = strdup(buffer);
+  filename_ = _strdup(buffer);
   if (shortname) free(shortname);
-  shortname = strdup(fl_filename_name(name));
+  shortname = _strdup(fl_filename_name(name));
   int n = strlen(shortname);
   if (labelname) free(labelname);
   labelname = (char*)malloc(n+3);
   strcpy(labelname, shortname);
   strcat(labelname, " *");
-  if (!changed()) 
+  if (!changed())
     labelname[n] = 0;
   label(labelname);
   tooltip(filename_);
@@ -585,9 +592,9 @@ void HeDocument::filename(const char *name) {
 void HeDocument::loadFile(const char *name) {
   if (!name) return;
   size_t n = 0;
-  filename(name);  
+  filename(name);
   size_ = 0;
-  file_ = open(filename(), O_RDONLY, 0644);
+  file_ = _open(filename(), O_RDONLY, 0644);
   if (file_==-1) {
     fl_alert("Can't open file \n\"%s\"\nfor reading.\n%s.",
              filename(), strerror(errno));
@@ -602,11 +609,11 @@ void HeDocument::loadFile(const char *name) {
   }
   size_ = st.st_size;
   if (size_==0) return;
-  if (buffer_) 
+  if (buffer_)
     free(buffer_);
   gap = size_; gapSize = 2048;
   buffer_ = (unsigned char*)malloc(size_+gapSize+2);
-  n = read(file_, buffer_, size_);
+  n = _read(file_, buffer_, size_);
   if (n==(size_t)-1) {
     fl_alert("Can't read contents of file \n\"%s\".\n%s.\n"
              "Assuming empty file.",
@@ -622,7 +629,7 @@ void HeDocument::loadFile(const char *name) {
   }
 cleanReturn:
   if (file_!=-1)
-    ::close(file_);
+    ::_close(file_);
   clearChanged();
   manager()->update();
 }
@@ -632,15 +639,15 @@ void HeDocument::saveFile(const char *name) {
     filename(name);
   else
     name = filename();
-  int out = open(filename(), O_WRONLY|O_CREAT|O_TRUNC, 0644);
+  int out = _open(filename(), O_WRONLY|O_CREAT|O_TRUNC, 0644);
   if (out==-1) {
     fl_alert("Can't open file \n\"%s\"\nfor writing.\n%s.",
              filename(), strerror(errno));
     return;
   }
   size_t n1=0, n2=0;
-  n1 = write(out, buffer_, gap);
-  if (n1!=(size_t)-1) n2 = write(out, buffer_+gap+gapSize, size_-gap);
+  n1 = _write(out, buffer_, gap);
+  if (n1!=(size_t)-1) n2 = _write(out, buffer_+gap+gapSize, size_-gap);
   if (n1==(size_t)-1 || n2==(size_t)-1) {
     fl_alert("Can't write document to file \n\"%s\".\n%s.\n"
              "File will be truncated.",
@@ -649,12 +656,12 @@ void HeDocument::saveFile(const char *name) {
     fl_alert("File \"%s\"\ntruncated while writing!",
              filename());
   }
-  ::close(out);
+  ::_close(out);
   clearChanged();
 }
 
 char HeDocument::close() {
-  if (!changed()) 
+  if (!changed())
     return true;
   if (fl_ask("Your document \"%s\" was changed, but not saved.\n"
              "Do you want to close this document and discard all changes?",
@@ -715,10 +722,10 @@ void HeDocument::addToGap(heIndex n) {
 }
 
 void HeDocument::deleteBytes(heIndex first, heIndex n) {
-  if (first+n>size_) 
+  if (first+n>size_)
     n = size_-first;
   moveGapTo(first);
-  gapSize+=n; 
+  gapSize+=n;
   size_-=n;
   if (!changed_) setChanged();
   redraw();
@@ -728,8 +735,8 @@ void HeDocument::insertBytes(heIndex first, heIndex n) {
   moveGapTo(first);
   if (gapSize<n)
     addToGap(n+16384);
-  gap+=n; 
-  gapSize-=n; 
+  gap+=n;
+  gapSize-=n;
   size_+=n;
   if (!changed_) setChanged();
   redraw();
@@ -755,12 +762,12 @@ void HeDocument::clearChanged() {
 
 //---- HeDocumentManager ---------------------------------------------------------
 
-HeDocumentManager::HeDocumentManager(int x, int y, int w, int h, HeDocument *d) 
+HeDocumentManager::HeDocumentManager(int x, int y, int w, int h, HeDocument *d)
 : Fl_Group(x, y, w, h)
 {
   doc = d;
   cursor_ = 1;
-  selection_ = 1; 
+  selection_ = 1;
   insertMode_ = 0;
   int sbh = 3*fontHeight()+12;
   status = new HeStatusBar(x+2, y+2, w-4, sbh, this);
@@ -802,7 +809,7 @@ int HeDocumentManager::spaceWidth() {
 
 int HeDocumentManager::attributeAt(heIndex ix) {
   int ret = 0;
-  if (ix==cursor_) 
+  if (ix==cursor_)
     ret |= HE_CURSOR;
   if (selection_>cursor_) {
     if (ix>=cursor_ && ix<=selection_) ret |= HE_SELECTED;
@@ -854,17 +861,17 @@ void HeDocumentManager::extendSelection(heIndex a, heIndex b) {
 }
 
 void HeDocumentManager::cursor(heIndex c, bool extend) {
-  if (c==cursor_ && (c==selection_ || !extend)) 
+  if (c==cursor_ && (c==selection_ || !extend))
     return;
   if (c>doc->size()) c = doc->size();
   //++ we should make the previous line visible, too
   //++ make the stuff below a function of the ColumnGroup (cursorVisible)
-  if (c<column->topLeftByte()) 
+  if (c<column->topLeftByte())
     column->topByte(c);
   //++ we should make the next line visible, too
   if (c>column->topLeftByte()+column->bytesPerPage()-column->bytesPerRow())
     column->topByte(c-column->bytesPerPage()+column->bytesPerRow());
-  if (c==cursor_ && (c==selection_ || !extend)) 
+  if (c==cursor_ && (c==selection_ || !extend))
     return;
   cursor_ = c;
   if (!extend) selection_ = c;
@@ -938,7 +945,7 @@ bool HeDocumentManager::searchNext(const unsigned short *txt, int len) {
 
 //---- HeStatusBar -------------------------------------------------------------
 
-HeStatusBar::HeStatusBar(int x, int y, int w, int h, HeDocumentManager *m) 
+HeStatusBar::HeStatusBar(int x, int y, int w, int h, HeDocumentManager *m)
 : Fl_Group(x, y, w, h)
 {
   byteOrder_ = 0;
@@ -954,7 +961,7 @@ HeStatusBar::HeStatusBar(int x, int y, int w, int h, HeDocumentManager *m)
   slct = new HeInput(crsr->x()+wlb+w10, y+2, w10, fh, "select:", 16, 10);
   offs = new HeInput(slct->x()+wlb+w10, y+2, w10, fh, "offset:", 16, 10);
   //-- second line: integer data
-  dtab = new HeCycleButton(x+2, y+fh+3, 27, fh+1, 
+  dtab = new HeCycleButton(x+2, y+fh+3, 27, fh+1,
                            4, "hex", "bin", "oct", "dec");
   dtab->callback(cycleDataBaseCB, this);
   int gx = x+30, gy = y+fh+4, gw = w-61;
@@ -1006,7 +1013,7 @@ HeStatusBar::HeStatusBar(int x, int y, int w, int h, HeDocumentManager *m)
   bins = new HeCycleButton(x+w-30, y+2*fh+5, 27, fh+1, 2, "OVR", "INS");
   bins->warnMask(2);
   bins->callback(insertModeCB, this);
-  
+
   box(FL_FLAT_BOX);
   end();
   Fl_Widget *rw = new Fl_Box(x+w-31, y, 1, h);
@@ -1043,7 +1050,7 @@ void HeStatusBar::updateData() {
     }
   } else if (binGrp->visible()) {
     d1b->value(v0);
-    if (byteOrder_) { 
+    if (byteOrder_) {
       d2b->value(v1+(v0<<8));
     } else {
       d2b->value(v0+(v1<<8));
@@ -1118,7 +1125,7 @@ void HeStatusBar::insertModeCB(Fl_Widget*, void *user_data) {
 
 //---- HeColumnGroup -----------------------------------------------------------
 
-HeColumnGroup::HeColumnGroup(int x, int y, int w, int h, HeDocumentManager *m) 
+HeColumnGroup::HeColumnGroup(int x, int y, int w, int h, HeDocumentManager *m)
 : Fl_Group(x, y, w, h)
 {
   end();
@@ -1165,7 +1172,7 @@ void HeColumnGroup::resize(int wx, int wy, int ww, int wh) {
     HeColumn *ci = (HeColumn*)child(i);
     ci->getWidth(wfixed, wflex);
     int wdt = wfixed+bytesPerRow_*wflex;
-    if (i==children()-1) 
+    if (i==children()-1)
       wx = w()-wdt;
     ci->resize(wx, wy, wdt, wh);
     wx += wdt;
@@ -1191,28 +1198,28 @@ int HeColumnGroup::handle(int event) {
     case FL_KEYBOARD: {
       bool xt = ((Fl::event_state()&FL_SHIFT)!=0);
       switch (Fl::event_key()) {
-        case FL_Up: 
-          if (cursor()>=(heIndex)bytesPerRow_) 
-            cursor(cursor()-bytesPerRow_, xt); 
+        case FL_Up:
+          if (cursor()>=(heIndex)bytesPerRow_)
+            cursor(cursor()-bytesPerRow_, xt);
           return 1;
-        case FL_Down: 
-          if (cursor()<=doc->size()-bytesPerRow_) 
-            cursor(cursor()+bytesPerRow_, xt); 
+        case FL_Down:
+          if (cursor()<=doc->size()-bytesPerRow_)
+            cursor(cursor()+bytesPerRow_, xt);
           return 1;
-        case FL_Left: 
-          if (cursor()>0) cursor(cursor()-1, xt); 
+        case FL_Left:
+          if (cursor()>0) cursor(cursor()-1, xt);
           return 1;
-        case FL_Right: 
+        case FL_Right:
           if (cursor()<doc->size()) cursor(cursor()+1, xt);
           return 1;
-        case FL_Page_Up: 
-          if (cursor()>=(heIndex)bytesPerPage()) 
+        case FL_Page_Up:
+          if (cursor()>=(heIndex)bytesPerPage())
             cursor(cursor()-bytesPerPage(), xt);
           else
             cursor(cursor()%bytesPerRow(), xt);
           return 1;
-        case FL_Page_Down: 
-          if (cursor()<=doc->size()-bytesPerPage()) 
+        case FL_Page_Down:
+          if (cursor()<=doc->size()-bytesPerPage())
             cursor(cursor()+bytesPerPage(), xt);
           else {
             heIndex c = cursor()%bytesPerRow();
@@ -1226,7 +1233,7 @@ int HeColumnGroup::handle(int event) {
             cursor(cursor()-cursor()%bytesPerRow_, xt);
           return 1;
         case FL_End:
-          if (Fl::event_state()&MM_CMD) 
+          if (Fl::event_state()&MM_CMD)
             cursor(doc->size(), xt);
           else
             cursor(cursor()-cursor()%bytesPerRow_+bytesPerRow_-1, xt);
@@ -1250,7 +1257,7 @@ int HeColumnGroup::handle(int event) {
 
 //---- HeColumn ----------------------------------------------------------------
 
-HeColumn::HeColumn(int x, int y, int w, int h, HeDocumentManager *m) 
+HeColumn::HeColumn(int x, int y, int w, int h, HeDocumentManager *m)
 : Fl_Group(x, y, w, h)
 {
   end();
@@ -1291,8 +1298,8 @@ heIndex HeColumn::eventRow() {
 
 //---- HeSeperatorColumn -------------------------------------------------------
 
-HeScrollbarColumn::HeScrollbarColumn(int x, int y, int w, int h, 
-                                     HeDocumentManager *cm) 
+HeScrollbarColumn::HeScrollbarColumn(int x, int y, int w, int h,
+                                     HeDocumentManager *cm)
 : HeColumn(x, y, w, h, cm)
 {
   begin();
@@ -1321,11 +1328,11 @@ void HeScrollbarColumn::scrollCB(Fl_Widget*, void *userdata) {
   HeScrollbarColumn *This = (HeScrollbarColumn*)userdata;
   This->column()->topRow(This->scroll->value());
 }
-  
+
 //---- HeSeperatorColumn -------------------------------------------------------
 
-HeSeperatorColumn::HeSeperatorColumn(int x, int y, int w, int h, 
-                                     HeDocumentManager *cm) 
+HeSeperatorColumn::HeSeperatorColumn(int x, int y, int w, int h,
+                                     HeDocumentManager *cm)
 : HeColumn(x, y, w, h, cm)
 {
 }
@@ -1345,7 +1352,7 @@ void HeSeperatorColumn::draw() {
 
 //---- HeAddrColumn ------------------------------------------------------------
 
-HeAddrColumn::HeAddrColumn(int x, int y, int w, int h, HeDocumentManager *cm) 
+HeAddrColumn::HeAddrColumn(int x, int y, int w, int h, HeDocumentManager *cm)
 : HeColumn(x, y, w, h, cm)
 {
 }
@@ -1394,7 +1401,7 @@ int HeAddrColumn::handle(int event) {
 
 //---- HeHexColumn -------------------------------------------------------------
 
-HeHexColumn::HeHexColumn(int x, int y, int w, int h, HeDocumentManager *cm) 
+HeHexColumn::HeHexColumn(int x, int y, int w, int h, HeDocumentManager *cm)
 : HeColumn(x, y, w, h, cm)
 {
   subCrsr = 0;
@@ -1455,10 +1462,10 @@ void HeHexColumn::draw() {
 }
 
 heIndex HeHexColumn::eventAddr() {
-  int col = (Fl::event_x()-x()-manager->spaceWidth()-1) 
+  int col = (Fl::event_x()-x()-manager->spaceWidth()-1)
     / ( 2*manager->fontWidth()+manager->spaceWidth());
   return eventRow() * column()->bytesPerRow() + col;
-}  
+}
 
 int HeHexColumn::handle(int event) {
   switch (event) {
@@ -1469,7 +1476,7 @@ int HeHexColumn::handle(int event) {
     case FL_UNFOCUS:
       subCrsr = 0;
       manager->redraw(); //++ make sure that only the cursor is redrawn!
-      return 1;    
+      return 1;
     case FL_PUSH:
       if (Fl::focus() != this) {
         Fl::focus(this);
@@ -1512,7 +1519,7 @@ int HeHexColumn::handle(int event) {
 
 //---- HeTextColumn ------------------------------------------------------------
 
-HeTextColumn::HeTextColumn(int x, int y, int w, int h, HeDocumentManager *cm) 
+HeTextColumn::HeTextColumn(int x, int y, int w, int h, HeDocumentManager *cm)
 : HeColumn(x, y, w, h, cm)
 {
 }
@@ -1567,7 +1574,7 @@ void HeTextColumn::draw() {
 heIndex HeTextColumn::eventAddr() {
   int col = (Fl::event_x()-x()-manager->spaceWidth()) / manager->fontWidth();
   return eventRow() * column()->bytesPerRow() + col;
-}  
+}
 
 int HeTextColumn::handle(int event) {
   switch (event) {
@@ -1576,7 +1583,7 @@ int HeTextColumn::handle(int event) {
       return 1;
     case FL_UNFOCUS:
       manager->redraw(); //++ make sure that only the cursor is redrawn!
-      return 1;    
+      return 1;
     case FL_PUSH:
       if (Fl::focus() != this) {
         Fl::focus(this);
@@ -1612,7 +1619,7 @@ HeInput::HeInput(int x, int y, int w, int h, const char *label, int bb, int nn)
 }
 
 void HeInput::value(heIndex v) {
-  static char *lu[] = { 
+  static char *lu[] = {
     "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL",
     "BS" , "HT" , "NL" , "VT" , "NP" , "CR" , "SO" , "SI",
     "DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB",
@@ -1620,7 +1627,7 @@ void HeInput::value(heIndex v) {
   static char buf[65];
   value_ = v;
   switch (base_) {
-    case 0: 
+    case 0:
       if (v==127) strcpy(buf, "DEL");
       else if (v<32) strcpy(buf, lu[v]);
       else { buf[0] = ' '; buf[1]=v; buf[2]=0; }
@@ -1676,7 +1683,7 @@ HeButton::HeButton(int x, int y, int w, int h, const char *t)
 
 //----- HeButton ---------------------------------------------------------------
 
-HeCycleButton::HeCycleButton(int x, int y, int w, int h, 
+HeCycleButton::HeCycleButton(int x, int y, int w, int h,
                              int n, char *t, ...)
 : HeButton(x, y, w, h, t) {
   labelsize(prefs.propsize-3);
@@ -1708,7 +1715,7 @@ void HeCycleButton::value(int n) {
   choice = n;
   if (warn & (1<<n))
     labelcolor(FL_RED);
-  else 
+  else
     labelcolor(FL_BLACK);
   label(labels[n]);
 }
@@ -1759,9 +1766,9 @@ int main(int argc, char **argv) {
   fl_font(FL_COURIER, prefs.fixedsize);
   fixedFontHeight = fl_height();
   fixedFontAscent = fl_height()-fl_descent();
-  fixedFontWidth = (int)(fl_width("W")+.7);  
+  fixedFontWidth = (int)(fl_width("W")+.7);
   fl_message_font(FL_HELVETICA, MM_PROP_SIZE_MED);
-                  
+
   HeApp app(argc, argv);
   return Fl::run();
 }
